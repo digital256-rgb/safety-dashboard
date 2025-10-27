@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Safety Performance Dashboard - PT Jambi Prima Coal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/2.29.3/index.min.js"></script>
+</head>
+<body>
+    <!-- Tier 1: KPI Headline Banner (Persistent) -->
+    <header class="kpi-banner">
+        <div class="container">
+            <div class="kpi-grid">
+                <!-- Main Milestone KPI -->
+                <div class="kpi-card kpi-card--primary">
+                    <div class="kpi-icon">🛡️</div>
+                    <div class="kpi-content">
+                        <div class="kpi-title">Man-Hours Since Last LTI</div>
+                        <div class="kpi-value" id="lti-hours">1,098,361</div>
+                    </div>
+                </div>
+
+                <!-- Core Safety Rate KPIs -->
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-title">Frequency Rate (FR) - YTD</div>
+                        <div class="kpi-value" id="frequency-rate">0.00</div>
+                        <div class="kpi-trend" id="fr-trend">
+                            <span class="trend-arrow">↓</span>
+                            <span class="trend-text">vs prev year</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-title">Severity Rate (SR) - YTD</div>
+                        <div class="kpi-value" id="severity-rate">0.00</div>
+                        <div class="kpi-trend" id="sr-trend">
+                            <span class="trend-arrow">↓</span>
+                            <span class="trend-text">vs prev year</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incident Volume KPIs -->
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-title">Total Cases (YTD)</div>
+                        <div class="kpi-value" id="total-cases">8</div>
+                        <div class="kpi-trend" id="tc-trend">
+                            <span class="trend-arrow">↑</span>
+                            <span class="trend-text">vs prev year</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-card--success">
+                    <div class="kpi-content">
+                        <div class="kpi-title">Lost Time Incidents (YTD)</div>
+                        <div class="kpi-value" id="lti-ytd">0</div>
+                        <div class="kpi-icon-small">✓</div>
+                    </div>
+                </div>
+
+                <!-- Exposure KPI -->
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-title">Total Man-Hours (YTD)</div>
+                        <div class="kpi-value" id="total-manhours">345,467</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Controls -->
+    <div class="controls-panel">
+        <div class="container">
+            <div class="controls-grid">
+                <!-- Entity Selector -->
+                <div class="control-group">
+                    <label class="control-label">View:</label>
+                    <div class="entity-selector">
+                        <button class="btn btn--secondary active" data-entity="total">Total Performance</button>
+                        <button class="btn btn--secondary" data-entity="jpc">PT JPC Performance</button>
+                        <button class="btn btn--secondary" data-entity="comparative">Comparative View</button>
+                    </div>
+                </div>
+
+                <!-- Date Range Selector -->
+                <div class="control-group">
+                    <label class="control-label">Date Range:</label>
+                    <div class="date-selector">
+                        <button class="btn btn--outline" data-range="last-month">Last Month</button>
+                        <button class="btn btn--outline" data-range="last-3">Last 3 Months</button>
+                        <button class="btn btn--outline" data-range="last-6">Last 6 Months</button>
+                        <button class="btn btn--outline active" data-range="ytd">YTD</button>
+                        <input type="date" id="custom-start" class="form-control">
+                        <input type="date" id="custom-end" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier 2: Primary Analytical Canvas -->
+    <main class="analytical-canvas">
+        <div class="container">
+            <!-- Standard View Charts -->
+            <div class="charts-grid" id="standard-charts">
+                <!-- Monthly Performance Trend -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Monthly Performance Trend: Exposure vs. Incidents</h3>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="monthly-trend-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Incident Composition Over Time -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Incident Composition Over Time</h3>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="incident-composition-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- YTD Incident Profile -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>YTD Incident Profile</h3>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="ytd-profile-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Accident Severity Breakdown -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Accident Severity Breakdown</h3>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="severity-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Workforce Intensity Analysis -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Workforce Intensity and Potential Fatigue Analysis</h3>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="workforce-intensity-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparative View Charts (Hidden by default) -->
+            <div class="charts-grid hidden" id="comparative-charts">
+                <!-- Comparative KPI Scorecard -->
+                <div class="chart-card chart-card--full">
+                    <div class="chart-header">
+                        <h3>Comparative KPI Scorecard</h3>
+                    </div>
+                    <div class="scorecard-table">
+                        <table id="comparative-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Total Performance</th>
+                                    <th>PT JPC Performance</th>
+                                    <th>Variance (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scorecard-body">
+                                <!-- Data populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Monthly Incident Contribution -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Monthly Incident Contribution</h3>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="incident-contribution-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Man-Hours Contribution -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Man-Hours Contribution</h3>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="manhours-contribution-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Tier 3: Granular Data Pane -->
+    <section class="data-pane">
+        <div class="container">
+            <div class="data-header">
+                <h3>Interactive Safety Performance Data</h3>
+                <div class="data-controls">
+                    <input type="text" id="table-search" class="form-control" placeholder="Search parameters...">
+                    <button class="btn btn--outline" id="export-csv">Export CSV</button>
+                    <button class="btn btn--outline" id="export-excel">Export Excel</button>
+                </div>
+            </div>
+            <div class="data-table-wrapper">
+                <table id="data-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="parameter">Parameter</th>
+                            <th class="sortable" data-sort="jan">Jan</th>
+                            <th class="sortable" data-sort="feb">Feb</th>
+                            <th class="sortable" data-sort="mar">Mar</th>
+                            <th class="sortable" data-sort="apr">Apr</th>
+                            <th class="sortable" data-sort="may">May</th>
+                            <th class="sortable" data-sort="jun">Jun</th>
+                            <th class="sortable" data-sort="jul">Jul</th>
+                            <th class="sortable" data-sort="aug">Aug</th>
+                            <th class="sortable" data-sort="ytd">YTD</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table-body">
+                        <!-- Data populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer with Data Timestamp -->
+    <footer class="dashboard-footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>Data current as of: <span id="last-updated">01 September 2025, 08:00 AM</span></p>
+                <p>Interactive Safety Performance Dashboard - PT Jambi Prima Coal</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
